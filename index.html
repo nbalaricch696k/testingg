@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snysters Extractor Pro - Smart Email Extractor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #0f3460;
+            --highlight: #e94560;
+            --success: #00d9ff;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --input-bg: #0d1b2a;
+            --danger: #ff6b6b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--primary);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            line-height: 1.4;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(233, 69, 96, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(0, 217, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(15, 52, 96, 0.3) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            height: 100vh;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+            padding: 8px 0;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--highlight), #ff8a9b);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 2px;
+        }
+
+        /* Stats Panel */
+        .stats-panel {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .stat-card {
+            background: var(--secondary);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 8px 16px;
+            text-align: center;
+            min-width: 120px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card.total {
+            border-color: rgba(160, 160, 176, 0.3);
+        }
+
+        .stat-card.filtered {
+            border-color: rgba(233, 69, 96, 0.4);
+        }
+
+        .stat-card.final {
+            border-color: rgba(0, 217, 255, 0.4);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .stat-card.total .stat-value { color: var(--text-primary); }
+        .stat-card.filtered .stat-value { color: var(--highlight); }
+        .stat-card.final .stat-value { color: var(--success); }
+
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .panel {
+            background: var(--secondary);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid var(--accent);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+            height: 100%;
+            flex: 1;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--success);
+            border-radius: 2px;
+        }
+
+        .char-count {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        textarea {
+            display: block;
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 10px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            resize: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--success);
+            box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.15);
+        }
+
+        textarea::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        #output {
+            background: var(--input-bg);
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: var(--secondary);
+            border-radius: 8px;
+            padding: 12px 16px;
+            border: 1px solid var(--accent);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .control-group-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Checkbox toggles */
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .toggle-item input {
+            display: none;
+        }
+
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 12px;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .toggle-item input:checked + .toggle-switch {
+            background: var(--highlight);
+        }
+
+        .toggle-item input:checked + .toggle-switch::after {
+            transform: translateX(20px);
+            background: var(--text-primary);
+        }
+
+        .toggle-item input:disabled + .toggle-switch {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .toggle-label {
+            font-size: 0.95rem;
+        }
+
+        .toggle-label span {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Radio buttons for separator */
+        .separator-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 8px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .radio-item:hover {
+            border-color: var(--success);
+        }
+
+        .radio-item input {
+            display: none;
+        }
+
+        .radio-item:has(input:checked) {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: var(--success);
+        }
+
+        .radio-item:has(input:checked) .radio-dot {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        .radio-dot {
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--text-secondary);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        /* Action Buttons */
+        .actions-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--highlight), #ff6b8a);
+            color: white;
+            box-shadow: 0 4px 20px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 28px rgba(233, 69, 96, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--accent);
+            color: var(--text-primary);
+            border: 1px solid var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary);
+            border-color: var(--success);
+        }
+
+        .btn-download {
+            position: relative;
+        }
+
+        .btn-download .dropdown-icon {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-download:hover .dropdown-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Dropdown menu */
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: var(--secondary);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+            min-width: 140px;
+        }
+
+        .btn-download:hover .dropdown-menu,
+        .btn-download:focus-within .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: background 0.3s ease;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .dropdown-item:hover {
+            background: var(--accent);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--secondary);
+            border: 1px solid var(--success);
+            padding: 16px 28px;
+            border-radius: 8px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            border-color: var(--highlight);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 8px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        footer a {
+            color: var(--success);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .stats-panel {
+                gap: 12px;
+            }
+
+            .stat-card {
+                min-width: 120px;
+                padding: 12px 16px;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <div class="logo-icon">📧</div>
+                <h1>Snysters Extractor Pro</h1>
+            </div>
+            <p class="tagline">Smart Browser-Based Email Extractor</p>
+        </header>
+
+        <!-- Stats Panel -->
+        <div class="stats-panel">
+            <div class="stat-card total">
+                <div class="stat-label">Total Found</div>
+                <div class="stat-value" id="totalCount">0</div>
+            </div>
+            <div class="stat-card filtered">
+                <div class="stat-label">Filtered (.edu/.info)</div>
+                <div class="stat-value" id="filteredCount">0</div>
+            </div>
+            <div class="stat-card final">
+                <div class="stat-label">Final Clean List</div>
+                <div class="stat-value" id="finalCount">0</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Input Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Paste Your Text Here</div>
+                    <div class="char-count"><span id="charCount">0</span> chars</div>
+                </div>
+                <textarea id="input" placeholder="Paste any text containing email addresses here...
+
+Example:
+Contact us at support@company.com for help.
+Reach John at john.doe@edu.org for academic inquiries.
+Sales: sales@business.info, marketing@company.net"></textarea>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Extracted Emails</div>
+                    <div class="char-count"><span id="emailCount">0</span> emails</div>
+                </div>
+                <textarea id="output" readonly placeholder="Extracted emails will appear here..."></textarea>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="controls-grid">
+                <!-- Filters -->
+                <div class="control-group">
+                    <div class="control-group-title">Filters (Always On)</div>
+                    <div class="toggle-group">
+                        <label class="toggle-item">
+                            <input type="checkbox" checked disabled>
+                            <span class="toggle-switch"></span>
+                            <span class="toggle-label">Remove .edu domains</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" checked disabled>
+                            <span class="toggle-switch"></span>
+                            <span class="toggle-label">Remove .info domains</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="removeDuplicates" checked>
+                            <span class="toggle-switch"></span>
+                            <span class="toggle-label">Remove duplicates</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Output Options -->
+                <div class="control-group">
+                    <div class="control-group-title">Output Options</div>
+                    <div class="separator-group">
+                        <label class="radio-item">
+                            <input type="radio" name="separator" value="comma" checked>
+                            <span class="radio-dot"></span>
+                            <span>Comma</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="separator" value="newline">
+                            <span class="radio-dot"></span>
+                            <span>New Line</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="separator" value="pipe">
+                            <span class="radio-dot"></span>
+                            <span>Pipe (|)</span>
+                        </label>
+                    </div>
+                    <div class="toggle-group" style="margin-top: 12px;">
+                        <label class="toggle-item">
+                            <input type="checkbox" id="sortAlphabetically">
+                            <span class="toggle-switch"></span>
+                            <span class="toggle-label">Sort alphabetically</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="groupEmails">
+                            <span class="toggle-switch"></span>
+                            <span class="toggle-label">Group every 50 emails</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="control-group">
+                    <div class="control-group-title">Actions</div>
+                    <div class="actions-group">
+                        <button class="btn btn-primary" id="extractBtn">
+                            <span>⚡</span> Extract
+                        </button>
+                        <button class="btn btn-secondary" id="resetBtn">
+                            <span>↺</span> Reset
+                        </button>
+                        <button class="btn btn-secondary" id="copyBtn">
+                            <span>📋</span> Copy
+                        </button>
+                        <button class="btn btn-secondary btn-download" id="downloadBtn">
+                            <span>↓</span> Download
+                            <span class="dropdown-icon">▼</span>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-item" data-format="txt">Download .txt</div>
+                                <div class="dropdown-item" data-format="csv">Download .csv</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Snysters Extractor Pro v1.0 — Client-side processing for speed & privacy</p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // DOM Elements
+        const input = document.getElementById('input');
+        const output = document.getElementById('output');
+        const charCount = document.getElementById('charCount');
+        const emailCount = document.getElementById('emailCount');
+        const totalCount = document.getElementById('totalCount');
+        const filteredCount = document.getElementById('filteredCount');
+        const finalCount = document.getElementById('finalCount');
+        const extractBtn = document.getElementById('extractBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const removeDuplicates = document.getElementById('removeDuplicates');
+        const sortAlphabetically = document.getElementById('sortAlphabetically');
+        const groupEmails = document.getElementById('groupEmails');
+        const toast = document.getElementById('toast');
+
+        // Email regex pattern
+        const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+
+        // Update character count
+        input.addEventListener('input', () => {
+            charCount.textContent = input.value.length.toLocaleString();
+        });
+
+        // Get separator value
+        function getSeparator() {
+            const separator = document.querySelector('input[name="separator"]:checked').value;
+            switch (separator) {
+                case 'comma': return ',';
+                case 'newline': return '\n';
+                case 'pipe': return '|';
+                default: return ',';
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, isError = false) {
+            toast.textContent = message;
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Extract emails
+        function extractEmails() {
+            const text = input.value.trim();
+            
+            if (!text) {
+                showToast('⚠️ Please paste text to extract emails', true);
+                return;
+            }
+
+            // Find all emails
+            const matches = text.match(emailRegex) || [];
+            const totalFound = matches.length;
+
+            if (totalFound === 0) {
+                showToast('📭 No email addresses found in the input', true);
+                updateStats(0, 0, 0);
+                output.value = '';
+                return;
+            }
+
+            // Filter .edu and .info domains
+            const filteredEmails = [];
+            let filteredCountVal = 0;
+
+            matches.forEach(email => {
+                const lowerEmail = email.toLowerCase();
+                if (lowerEmail.endsWith('.edu') || lowerEmail.endsWith('.info')) {
+                    filteredCountVal++;
+                } else {
+                    filteredEmails.push(email);
+                }
+            });
+
+            if (filteredEmails.length === 0) {
+                showToast('🚫 All emails were filtered out (.edu/.info domains)', true);
+                updateStats(totalFound, filteredCountVal, 0);
+                output.value = '';
+                return;
+            }
+
+            // Remove duplicates
+            let finalEmails = filteredEmails;
+            if (removeDuplicates.checked) {
+                const seen = new Set();
+                finalEmails = finalEmails.filter(email => {
+                    const lower = email.toLowerCase();
+                    if (seen.has(lower)) return false;
+                    seen.add(lower);
+                    return true;
+                });
+            }
+
+            // Sort alphabetically if enabled
+            if (sortAlphabetically.checked) {
+                finalEmails.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+            }
+
+            // Format output
+            const separator = getSeparator();
+            let result = finalEmails.join(separator);
+
+            // Group every 50 emails if enabled
+            if (groupEmails.checked && finalEmails.length > 50) {
+                const groups = [];
+                for (let i = 0; i < finalEmails.length; i += 50) {
+                    groups.push(finalEmails.slice(i, i + 50).join(separator));
+                }
+                result = groups.join('\n--- Break ---\n');
+            }
+
+            // Update output
+            output.value = result;
+
+            // Update stats
+            const finalCountVal = finalEmails.length;
+            updateStats(totalFound, filteredCountVal, finalCountVal);
+
+            showToast(`✅ Extracted ${finalCountVal} email addresses`);
+        }
+
+        // Update statistics
+        function updateStats(total, filtered, final) {
+            totalCount.textContent = total.toLocaleString();
+            filteredCount.textContent = filtered.toLocaleString();
+            finalCount.textContent = final.toLocaleString();
+            emailCount.textContent = final.toLocaleString();
+        }
+
+        // Reset fields
+        function resetFields() {
+            input.value = '';
+            output.value = '';
+            charCount.textContent = '0';
+            emailCount.textContent = '0';
+            updateStats(0, 0, 0);
+            showToast('🔄 Fields reset successfully');
+        }
+
+        // Copy to clipboard
+        async function copyToClipboard() {
+            const text = output.value;
+            
+            if (!text) {
+                showToast('⚠️ No emails to copy', true);
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('📋 Copied to clipboard!');
+            } catch (err) {
+                showToast('❌ Failed to copy', true);
+            }
+        }
+
+        // Download file
+        function downloadFile(format) {
+            const text = output.value;
+            
+            if (!text) {
+                showToast('⚠️ No emails to download', true);
+                return;
+            }
+
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[-:]/g, '').slice(0, 15);
+            const filename = `extracted_emails_${timestamp}`;
+
+            let content = text;
+            let mimeType = 'text/plain';
+            let extension = format;
+
+            if (format === 'csv') {
+                // Convert to CSV format
+                const emails = text.split(/[,\n|]/).filter(e => e.trim() && e !== '--- Break ---');
+                content = 'Email Address\n' + emails.join('\n');
+                mimeType = 'text/csv';
+            }
+
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${filename}.${extension}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast(`📥 Downloaded ${filename}.${extension}`);
+        }
+
+        // Event Listeners
+        extractBtn.addEventListener('click', extractEmails);
+        resetBtn.addEventListener('click', resetFields);
+        copyBtn.addEventListener('click', copyToClipboard);
+
+        // Download dropdown
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                downloadFile(e.target.dataset.format);
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Enter to extract
+            if (e.ctrlKey && e.key === 'Enter') {
+                extractEmails();
+            }
+            // Ctrl+Shift+C to copy
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                copyToClipboard();
+            }
+        });
+    </script>
+</body>
+</html>
